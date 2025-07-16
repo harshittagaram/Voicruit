@@ -23,7 +23,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Use injected CORS config
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/public/**", "/api/interviews", "/interview").permitAll() // Exact match for /api/interviews
+                        .requestMatchers("/", "/login", "/public/**", "/api/interviews", "/interview", "/api/generate-questions").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth

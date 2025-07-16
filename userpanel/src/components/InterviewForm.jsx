@@ -1,6 +1,8 @@
-// src/components/InterviewForm.jsx
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import { FaSpinner } from "react-icons/fa";
+import "react-toastify/dist/ReactToastify.css";
 
 const InterviewForm = ({
   form,
@@ -11,14 +13,18 @@ const InterviewForm = ({
   onSuccess,
   onError,
 }) => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.jobTitle || !form.description || !form.selectedType) {
+      toast.error("❌ Please fill all required fields.");
       onError("Please fill all required fields.");
-      alert("❌ Please fill all required fields.");
       return;
     }
+
+    setIsSubmitted(true);
 
     try {
       const response = await axios.post(
@@ -34,14 +40,13 @@ const InterviewForm = ({
 
       const { interviewData, questions } = response.data;
       onSuccess({ interviewData, questions });
-      alert(
-        "✅ Form submitted successfully! Interview data saved and questions generated."
-      );
+      toast.success("✅ Interview created and questions generated!");
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message;
-      console.error("Error in submission:", errorMessage, error);
-      alert(`❌ Failed to submit form: ${errorMessage}`);
+      console.error("Error in submission:", errorMessage);
+      toast.error(`❌ Failed: ${errorMessage}`);
       onError(`Failed to create interview: ${errorMessage}`);
+      setIsSubmitted(false); // re-enable button on failure
     }
   };
 
@@ -50,6 +55,8 @@ const InterviewForm = ({
       onSubmit={handleSubmit}
       className="bg-white p-6 rounded-xl shadow-md space-y-6 max-w-3xl"
     >
+      <ToastContainer position="top-right" autoClose={3000} />
+
       <div>
         <label className="block text-gray-700 mb-1">Job Position</label>
         <input
@@ -111,10 +118,21 @@ const InterviewForm = ({
       <div className="flex justify-end">
         <button
           type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg"
-          disabled={isGenerating}
+          className={`px-6 py-2 rounded-lg flex items-center gap-2 transition-all duration-200
+            ${
+              isGenerating || isSubmitted
+                ? "bg-blue-300 cursor-not-allowed text-white"
+                : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+            }`}
+          disabled={isGenerating || isSubmitted}
         >
-          {isGenerating ? "Generating..." : "Generate Questions →"}
+          {isGenerating ? (
+            <>
+              <FaSpinner className="animate-spin" /> Generating...
+            </>
+          ) : (
+            "Generate Questions →"
+          )}
         </button>
       </div>
     </form>

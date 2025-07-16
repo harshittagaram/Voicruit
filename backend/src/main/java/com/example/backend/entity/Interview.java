@@ -1,7 +1,6 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 public class Interview {
@@ -9,13 +8,29 @@ public class Interview {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String jobTitle;
+    @Column(columnDefinition = "TEXT")
     private String description;
+    private String jobTitle;
     private String duration;
     private String interviewType;
     private String createdBy;
 
+    @Column(columnDefinition = "TEXT")
+    private String questions;
+
+    // Default constructor
+    public Interview() {}
+
+    // Constructor
+    public Interview(String jobTitle, String description, String duration, String interviewType, String createdBy) {
+        this.jobTitle = jobTitle;
+        this.description = description;
+        this.duration = duration;
+        this.interviewType = interviewType;
+        this.createdBy = createdBy;
+    }
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -64,28 +79,11 @@ public class Interview {
         this.createdBy = createdBy;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public String getQuestions() {
+        return questions;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setQuestions(String questions) {
+        this.questions = questions;
     }
-
-    private LocalDateTime createdAt;
-
-    // Constructors
-    public Interview() {}
-
-    public Interview(String jobTitle, String description, String duration, String interviewType, String createdBy) {
-        this.jobTitle = jobTitle;
-        this.description = description;
-        this.duration = duration;
-        this.interviewType = interviewType;
-        this.createdBy = createdBy;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    // Getters & Setters
-    // (can generate automatically or use Lombok)
 }

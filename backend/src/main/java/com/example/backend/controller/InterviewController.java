@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.InterviewRequest;
+import com.example.backend.entity.Interview;
 import com.example.backend.service.InterviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,27 +24,25 @@ public class InterviewController {
         this.aiQuestionController = aiQuestionController;
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Interview> getInterview(@PathVariable Long id) {
+        return interviewService.getInterviewById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createInterview(@RequestBody InterviewRequest request, @AuthenticationPrincipal OAuth2User user) {
+    public ResponseEntity<Map<String, Object>> createInterview(
+            @RequestBody InterviewRequest request,
+            @AuthenticationPrincipal OAuth2User user) {
+
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
         }
 
         String email = user.getAttribute("email");
-        interviewService.createInterview(request, email);
 
-        // Generate a sample link (replace with your logic)
-        String link = "https://voicruit.com/interview/" + email + "_" + System.currentTimeMillis();
-
-        // Prepare interviewData
-        Map<String, Object> interviewData = new HashMap<>();
-        interviewData.put("jobTitle", request.getJobTitle());
-        interviewData.put("description", request.getDescription());
-        interviewData.put("duration", request.getDuration());
-        interviewData.put("type", request.getInterviewType());
-        interviewData.put("link", link);
-
-        // Call AI question generation directly
+        // First, generate AI questions
         AIQuestionController.AIRequest aiRequest = new AIQuestionController.AIRequest();
         aiRequest.setJobPosition(request.getJobTitle());
         aiRequest.setJobDescription(request.getDescription());
@@ -51,13 +50,33 @@ public class InterviewController {
         aiRequest.setInterviewType(request.getInterviewType());
 
         ResponseEntity<AIQuestionController.AIResponse> questionResponse = aiQuestionController.generateQuestions(aiRequest);
-        if (questionResponse.getStatusCode().is2xxSuccessful()) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("interviewData", interviewData);
-            response.put("questions", questionResponse.getBody().getQuestions());
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(questionResponse.getStatusCode()).body(Map.of("message", "Failed to generate questions"));
+
+        if (!questionResponse.getStatusCode().is2xxSuccessful()) {
+            return ResponseEntity.status(questionResponse.getStatusCode())
+                    .body(Map.of("message", "Failed to generate questions"));
         }
+
+        // Now save the interview with questions
+        Interview interview = interviewService.createInterview(
+                request,
+                email,
+                questionResponse.getBody().getQuestions()
+        );
+
+        String link = "https://voicruit.com/interview/" + interview.getId();
+
+        Map<String, Object> interviewData = new HashMap<>();
+        interviewData.put("id", interview.getId()); // Added id to response
+        interviewData.put("jobTitle", interview.getJobTitle());
+        interviewData.put("description", interview.getDescription());
+        interviewData.put("duration", interview.getDuration());
+        interviewData.put("type", interview.getInterviewType());
+        interviewData.put("link", link);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("interviewData", interviewData);
+        response.put("questions", questionResponse.getBody().getQuestions());
+
+        return ResponseEntity.ok(response);
     }
 }

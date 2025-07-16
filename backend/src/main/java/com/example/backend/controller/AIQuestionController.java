@@ -9,6 +9,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -46,9 +47,10 @@ public class AIQuestionController {
 
             String requestBody = String.format(
                     "{\"model\": \"mistralai/mistral-7b-instruct\", \"messages\": [{\"role\": \"user\", \"content\": \"%s\"}]}",
-
                     prompt.replace("\"", "\\\"")
             );
+
+
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + openrouterApiKey);
@@ -74,11 +76,18 @@ public class AIQuestionController {
                 logger.error("OpenRouter API error: Status {}, Body: {}", response.getStatusCode(), response.getBody());
                 return ResponseEntity.status(response.getStatusCode()).body(new AIResponse(List.of("Failed to generate questions: " + response.getBody())));
             }
-        } catch (Exception e) {
-            logger.error("Exception in generateQuestions: ", e);
-            return ResponseEntity.status(500).body(new AIResponse(List.of("Error generating questions: " + e.getMessage())));
-        }
+        } catch (
+    HttpClientErrorException e) {
+        logger.error("HTTP Client Error: {}", e.getResponseBodyAsString());
+        return ResponseEntity.status(e.getStatusCode())
+                .body(new AIResponse(List.of("HTTP error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString())));
+    } catch (Exception e) {
+        logger.error("Exception in generateQuestions: ", e);
+        return ResponseEntity.status(500)
+                .body(new AIResponse(List.of("Error generating questions: " + e.getMessage())));
     }
+
+}
 
     public static class AIRequest {
         private String jobPosition;
