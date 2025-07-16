@@ -1,3 +1,4 @@
+// src/components/CreateInterview.jsx
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import InterviewForm from "../components/InterviewForm";
@@ -22,8 +23,8 @@ const CreateInterview = () => {
 
   const [step, setStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [interviewData, setInterviewData] = useState(null);
+  const [generatedQuestions, setGeneratedQuestions] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,15 +38,9 @@ const CreateInterview = () => {
     }));
   };
 
-  const handleFormSuccess = (interviewData) => {
-    setGeneratedQuestions([
-      `Why do you want the role of ${form.jobTitle}?`,
-      `How do you handle challenges in ${form.selectedType} scenarios?`,
-      `Explain a situation where your ${form.selectedType} skills were tested.`,
-    ]);
-
+  const handleFormSuccess = ({ interviewData, questions }) => {
     setInterviewData(interviewData);
-
+    setGeneratedQuestions(questions);
     setStep(1);
     setIsGenerating(false);
   };
@@ -56,7 +51,7 @@ const CreateInterview = () => {
   };
 
   const handleGenerateInterview = () => {
-    setStep(2); 
+    setStep(2);
   };
 
   return (
@@ -77,11 +72,12 @@ const CreateInterview = () => {
           />
         )}
 
-        {step === 1 && (
+        {step === 1 && interviewData && generatedQuestions && (
           <QuestionsPreview
+            interviewData={interviewData}
             questions={generatedQuestions}
             onBack={() => setStep(0)}
-            onConfirm={handleGenerateInterview} 
+            onConfirm={handleGenerateInterview}
           />
         )}
 

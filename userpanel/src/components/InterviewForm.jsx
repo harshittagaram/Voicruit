@@ -1,3 +1,4 @@
+// src/components/InterviewForm.jsx
 import React from "react";
 import axios from "axios";
 
@@ -20,35 +21,26 @@ const InterviewForm = ({
     }
 
     try {
-      const payload = {
-        jobTitle: form.jobTitle,
-        description: form.description,
-        duration: form.duration,
-        type: form.selectedType,
-      };
-      console.log("Sending payload to backend:", payload); 
-
       const response = await axios.post(
         "http://localhost:8080/api/interviews",
-        payload,
         {
-          withCredentials: true,
-        }
+          jobTitle: form.jobTitle,
+          description: form.description,
+          duration: form.duration,
+          interviewType: form.selectedType,
+        },
+        { withCredentials: true }
       );
 
-      console.log("Backend response:", response.data); 
-      alert("✅ Form submitted successfully! Interview data saved."); 
-
-      onSuccess({
-        jobTitle: form.jobTitle,
-        type: form.selectedType,
-        duration: form.duration,
-        link: response.data.link || "https://voicruit.com/interview/abc123",
-      });
+      const { interviewData, questions } = response.data;
+      onSuccess({ interviewData, questions });
+      alert(
+        "✅ Form submitted successfully! Interview data saved and questions generated."
+      );
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message;
-      console.error("Error creating interview:", errorMessage, error);
-      alert(`❌ Failed to submit form: ${errorMessage}`); 
+      console.error("Error in submission:", errorMessage, error);
+      alert(`❌ Failed to submit form: ${errorMessage}`);
       onError(`Failed to create interview: ${errorMessage}`);
     }
   };

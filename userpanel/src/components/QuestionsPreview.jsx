@@ -1,15 +1,19 @@
 // src/components/QuestionsPreview.jsx
 import React from "react";
 
-const QuestionsPreview = ({ questions, onBack, onConfirm }) => {
+const QuestionsPreview = ({ interviewData, questions, onBack, onConfirm }) => {
   return (
     <div className="max-w-3xl bg-white p-6 rounded-xl shadow space-y-6">
       <h2 className="text-xl font-semibold">🧠 AI-Generated Questions</h2>
-      <ul className="list-disc list-inside text-gray-700">
-        {questions.map((q, idx) => (
-          <li key={idx}>{q}</li>
-        ))}
-      </ul>
+      {questions && questions.length > 0 ? (
+        <ul className="list-disc list-inside text-gray-700">
+          {questions.map((q, idx) => (
+            <li key={idx}>{q}</li>
+          ))}
+        </ul>
+      ) : (
+        <div>QuestionList</div>
+      )}
 
       <div className="flex justify-between pt-4">
         <button
@@ -21,6 +25,7 @@ const QuestionsPreview = ({ questions, onBack, onConfirm }) => {
         <button
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           onClick={onConfirm}
+          disabled={questions.length === 0}
         >
           Generate Interview →
         </button>
