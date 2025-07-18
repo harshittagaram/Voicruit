@@ -13,9 +13,11 @@ public class SecurityConfig {
 
     private final CorsConfigurationSource corsConfigurationSource;
 
+
     public SecurityConfig(CorsConfig corsConfig) {
         this.corsConfigurationSource = corsConfig.corsConfigurationSource();
     }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -23,7 +25,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Use injected CORS config
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/public/**", "/api/interviews", "/interview", "/api/generate-questions").permitAll()
+                        .requestMatchers("/", "/login", "/public/**", "/api/interviews", "/interview", "/api/generate-questions","/api/interviews/*/start-call").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth

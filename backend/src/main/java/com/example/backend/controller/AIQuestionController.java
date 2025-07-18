@@ -40,10 +40,11 @@ public class AIQuestionController {
 
             logger.info("Generating questions for jobPosition: {}", request.getJobPosition());
             String url = "https://openrouter.ai/api/v1/chat/completions";
-            String prompt = String.format(
-                    "Generate interview questions for a %s role with the following description: \"%s\". The interview type is %s, and the duration is %s. Provide 3-5 relevant questions.",
-                    request.getJobPosition(), request.getJobDescription(), request.getInterviewType(), request.getDuration()
-            );
+            String prompt = "You are an expert technical interviewer. Based on the following inputs, generate a well-structured list of high-quality interview questions: Job Title: {jobTitle}; Job Description: {jobDescription}; Interview Duration: {duration}; Interview Type: {type}; \n\nYour Task: Analyze the job description to identify key responsibilities, required skills, and expected experience. Generate a list of interview questions depends on interview duration. Adjust the number and depth of questions to match the interview duration. Ensure the questions match the tone and structure of a real-life {type} interview. \n\nFormat your response in JSON format with array list of questions. {\n  \"question\": [\n    {\n      \"type\": \"Technical/Behavioral/Experience/Problem Solving/Leasinghip\",\n      \"text\": \"<question-text>\"\n    }\n  ]\n}\n\nThe goal is to create a structured, relevant, and time-optimized interview plan for a {jobTitle} role."
+                    .replace("{jobTitle}", request.getJobPosition())
+                    .replace("{jobDescription}", request.getJobDescription())
+                    .replace("{duration}", request.getDuration())
+                    .replace("{type}", request.getInterviewType());
 
             String requestBody = String.format(
                     "{\"model\": \"mistralai/mistral-7b-instruct\", \"messages\": [{\"role\": \"user\", \"content\": \"%s\"}]}",

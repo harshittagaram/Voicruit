@@ -16,13 +16,16 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class InterviewController {
 
+
     private final InterviewService interviewService;
     private final AIQuestionController aiQuestionController;
 
-    public InterviewController(InterviewService interviewService, AIQuestionController aiQuestionController) {
+    public InterviewController(InterviewService interviewService,
+                               AIQuestionController aiQuestionController) {
         this.interviewService = interviewService;
         this.aiQuestionController = aiQuestionController;
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Interview> getInterview(@PathVariable Long id) {
