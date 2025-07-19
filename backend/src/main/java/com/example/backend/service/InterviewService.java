@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+
 import com.example.backend.dto.InterviewRequest;
 import com.example.backend.entity.Interview;
 import com.example.backend.repository.InterviewRepository;
@@ -16,6 +17,11 @@ public class InterviewService {
     public InterviewService(InterviewRepository interviewRepository) {
         this.interviewRepository = interviewRepository;
     }
+
+    public List<Interview> getInterviewsByEmail(String email) {
+        return interviewRepository.findByCreatedBy(email);
+    }
+
 
     public Interview createInterview(InterviewRequest request, String createdBy, List<String> questions) {
         Interview interview = new Interview(

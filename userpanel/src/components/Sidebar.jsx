@@ -17,15 +17,16 @@ const Sidebar = () => {
       </a>
 
       <nav className="space-y-4 text-gray-700">
-        <a href="#" className="block hover:text-blue-600 font-medium">
+        <Link to="/dashboard" className="block hover:text-blue-600 font-medium">
           Dashboard
-        </a>
+        </Link>
         <a href="#" className="block hover:text-blue-600">
           Scheduled Interview
         </a>
-        <a href="#" className="block hover:text-blue-600">
-          All Interview
-        </a>
+        <Link to="/all-interviews" className="block hover:text-blue-600">
+          Your Past Interviews
+        </Link>
+
         <a href="#" className="block hover:text-blue-600">
           Billing
         </a>

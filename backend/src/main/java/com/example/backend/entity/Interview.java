@@ -17,6 +17,9 @@ public class Interview {
 
     @Column(columnDefinition = "TEXT")
     private String questions;
+    @Column(columnDefinition = "TEXT")
+    private String feedback;
+
 
     // Default constructor
     public Interview() {}
@@ -86,4 +89,12 @@ public class Interview {
     public void setQuestions(String questions) {
         this.questions = questions;
     }
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
+    }
+
 }

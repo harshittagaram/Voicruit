@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -33,6 +34,19 @@ public class InterviewController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<Interview>> getMyInterviews(@AuthenticationPrincipal OAuth2User user) {
+        if (user == null) {
+            return ResponseEntity.status(401).build(); // unauthorized
+        }
+
+        String email = user.getAttribute("email"); // make sure this matches your OAuth2 attribute
+        List<Interview> interviews = interviewService.getInterviewsByEmail(email);
+        return ResponseEntity.ok(interviews);
+    }
+
+
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createInterview(

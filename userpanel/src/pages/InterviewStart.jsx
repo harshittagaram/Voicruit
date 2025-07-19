@@ -1,8 +1,6 @@
-// src/pages/InterviewStart.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import photo from "../assets/Voicruit_1.png";
-import { useInterviewData } from "../context/InterviewDataContext";
 
 const InterviewStart = () => {
   const { id } = useParams();
@@ -10,19 +8,15 @@ const InterviewStart = () => {
   const location = useLocation();
   const [interview, setInterview] = useState(null);
   const [name, setName] = useState("");
-  const { setInterviewInfo } = useInterviewData();
   const [currentTime, setCurrentTime] = useState(
     new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })
   );
+  const [isLoading, setIsLoading] = useState(true);
 
   const linkFromState =
     location.state?.link || `http://localhost:5173/interview/${id}`;
-  const jobTitle =
-    location.state?.interviewData?.jobTitle ||
-    interview?.jobTitle ||
-    "Interview";
-  const duration =
-    location.state?.interviewData?.duration || interview?.duration || "15 Min";
+  const jobTitle = interview?.jobTitle || "Interview";
+  const duration = interview?.duration || "15 Min";
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -31,80 +25,7 @@ const InterviewStart = () => {
       );
     }, 1000);
 
-    const updateInterviewInfo = (data) => {
-      let questionsArray = [];
-      if (data?.questions) {
-        try {
-          // Log the raw JSON string for debugging
-          console.log("Raw questions JSON:", data.questions);
-
-          // Attempt to parse the JSON
-          const parsedQuestions = JSON.parse(data.questions);
-
-          // Validate the parsed JSON structure
-          if (
-            !parsedQuestions.question ||
-            !Array.isArray(parsedQuestions.question)
-          ) {
-            throw new Error(
-              "Invalid JSON structure: 'question' array not found"
-            );
-          }
-
-          // Extract question text
-          questionsArray = parsedQuestions.question
-            .map((q) => {
-              if (!q.text) {
-                console.warn("Question missing text:", q);
-                return null;
-              }
-              return q.text;
-            })
-            .filter(Boolean) // Remove null/undefined entries
-            .slice(0, 5); // Limit to 5 questions for a 15-minute interview
-
-          console.log("Parsed questions:", questionsArray);
-        } catch (e) {
-          console.error("Error parsing questions JSON:", e.message);
-          console.log("Raw questions string:", data.questions);
-
-          // Fallback: Try to handle as a plain string or malformed JSON
-          try {
-            questionsArray = data.questions
-              .split("\n")
-              .map((q) => q.trim())
-              .filter(
-                (q) =>
-                  q && q !== "," && !q.startsWith("{") && !q.startsWith("}")
-              )
-              .slice(0, 5); // Limit to 5 questions
-            console.log("Fallback questions:", questionsArray);
-          } catch (fallbackError) {
-            console.error("Fallback parsing failed:", fallbackError.message);
-            questionsArray = []; // Ensure empty array if all parsing fails
-          }
-        }
-      } else {
-        console.warn("No questions found in data:", data);
-      }
-
-      // Update context with parsed data
-      setInterviewInfo((prev) => {
-        const updatedInfo = {
-          ...prev,
-          userName: prev.userName || name || data?.createdBy || "Candidate",
-          interviewData: {
-            ...prev.interviewData,
-            jobTitle: data?.jobTitle || jobTitle,
-            duration: data?.duration || duration,
-            questionList: questionsArray,
-          },
-        };
-        console.log("Updated interviewInfo:", updatedInfo);
-        return updatedInfo;
-      });
-    };
-
+    setIsLoading(true);
     if (!location.state?.interviewData) {
       fetch(`http://localhost:8080/api/interviews/${id}`, {
         method: "GET",
@@ -126,9 +47,9 @@ const InterviewStart = () => {
           return res.json();
         })
         .then((data) => {
-          console.log("API Response:", data);
+          console.log("API Response from GET:", data);
           setInterview(data);
-          updateInterviewInfo(data);
+          setIsLoading(false);
         })
         .catch((err) => {
           console.error("Error fetching interview:", err.message);
@@ -137,26 +58,29 @@ const InterviewStart = () => {
           } else if (err.message.includes("Interview not found")) {
             setInterview({ error: "Interview not found." });
           }
+          setIsLoading(false);
         });
     } else {
+      console.log(
+        "Using location.state.interviewData:",
+        location.state.interviewData
+      );
       setInterview(location.state.interviewData);
-      updateInterviewInfo(location.state.interviewData);
+      setIsLoading(false);
     }
 
     return () => clearInterval(timer);
-  }, [id, location.state, navigate, name, setInterviewInfo]);
+  }, [id, location.state, navigate]);
 
   const handleJoin = () => {
     if (name.trim()) {
-      setInterviewInfo((prev) => ({
-        ...prev,
-        userName: name,
-      }));
-      navigate(`/interview/${id}/start?name=${encodeURIComponent(name)}`);
+      navigate(`/interview/${id}/start`, {
+        state: { interviewData: interview, userName: name },
+      });
     }
   };
 
-  if (!interview && !location.state?.interviewData) {
+  if (isLoading) {
     return <div className="text-center mt-20 text-gray-500">Loading...</div>;
   }
 
