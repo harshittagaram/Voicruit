@@ -17,7 +17,6 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class InterviewController {
 
-
     private final InterviewService interviewService;
     private final AIQuestionController aiQuestionController;
 
@@ -26,7 +25,6 @@ public class InterviewController {
         this.interviewService = interviewService;
         this.aiQuestionController = aiQuestionController;
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<Interview> getInterview(@PathVariable Long id) {
@@ -41,12 +39,10 @@ public class InterviewController {
             return ResponseEntity.status(401).build(); // unauthorized
         }
 
-        String email = user.getAttribute("email"); // make sure this matches your OAuth2 attribute
+        String email = user.getAttribute("email");
         List<Interview> interviews = interviewService.getInterviewsByEmail(email);
         return ResponseEntity.ok(interviews);
     }
-
-
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createInterview(
@@ -83,12 +79,13 @@ public class InterviewController {
         String link = "https://voicruit.com/interview/" + interview.getId();
 
         Map<String, Object> interviewData = new HashMap<>();
-        interviewData.put("id", interview.getId()); // Added id to response
+        interviewData.put("id", interview.getId());
         interviewData.put("jobTitle", interview.getJobTitle());
         interviewData.put("description", interview.getDescription());
         interviewData.put("duration", interview.getDuration());
         interviewData.put("type", interview.getInterviewType());
         interviewData.put("link", link);
+        interviewData.put("createdAt", interview.getCreatedAt()); // Added createdAt
 
         Map<String, Object> response = new HashMap<>();
         response.put("interviewData", interviewData);

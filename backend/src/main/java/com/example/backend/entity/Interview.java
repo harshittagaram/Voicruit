@@ -1,6 +1,7 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 public class Interview {
@@ -20,6 +21,8 @@ public class Interview {
     @Column(columnDefinition = "TEXT")
     private String feedback;
 
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     // Default constructor
     public Interview() {}
@@ -31,6 +34,12 @@ public class Interview {
         this.duration = duration;
         this.interviewType = interviewType;
         this.createdBy = createdBy;
+    }
+
+    // Automatically set createdAt before persisting
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 
     // Getters and Setters
@@ -89,6 +98,7 @@ public class Interview {
     public void setQuestions(String questions) {
         this.questions = questions;
     }
+
     public String getFeedback() {
         return feedback;
     }
@@ -97,4 +107,11 @@ public class Interview {
         this.feedback = feedback;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }
