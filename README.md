@@ -112,4 +112,4 @@ spring.datasource.password=your_db_password
 
 ## 📬 Contact
 
-Made with 💼 by [Harshit Tagaram](https://github.com/harshittagaram)
+[Harshit Tagaram](https://github.com/harshittagaram)
