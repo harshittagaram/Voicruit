@@ -29,7 +29,7 @@ function InterviewRoom() {
   const [activeUser, setActiveUser] = useState(true);
   const [conversation, setConversation] = useState([]);
   const conversationRef = useRef([]);
-  const [feedback, setFeedback] = useState(null); // Store feedback data
+  const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
     setIsLoading(true);
@@ -111,7 +111,7 @@ function InterviewRoom() {
     vapi.on("call-end", () => {
       console.log("Call has ended.");
       toast("Interview Ended");
-      GenerateFeedback(); // Uses the latest from conversationRef
+      GenerateFeedback();
     });
     vapi.on("speech-start", () => {
       console.log("Assistant speech has started.");
@@ -127,7 +127,7 @@ function InterviewRoom() {
       if (message?.conversation) {
         console.log("Message received:", message.conversation);
         setConversation(message.conversation);
-        conversationRef.current = message.conversation; // <-- this keeps the latest
+        conversationRef.current = message.conversation;
       } else {
         console.warn("Received undefined conversation!");
       }
@@ -135,8 +135,7 @@ function InterviewRoom() {
 
     vapi.on("error", (error) => console.error("Vapi error:", error));
 
-    return () => 
-      clearInterval(timer);
+    return () => clearInterval(timer);
   }, [id, location.state, userName]);
 
   const startInterview = () => {
@@ -205,13 +204,12 @@ function InterviewRoom() {
     } else {
       console.warn("No conversation data available for feedback.");
       toast.warn("No conversation data to generate feedback.");
+      navigate("/completed"); // Navigate to /completed even if no conversation
     }
   };
 
-
-
- const GenerateFeedbackForm = (conv) => {
-   console.log("Opening feedback form with:", conv);
+  const GenerateFeedbackForm = (conv) => {
+    console.log("Opening feedback form with:", conv);
     const payload = {
       interviewId: id,
       userName: userName,
@@ -219,42 +217,35 @@ function InterviewRoom() {
       duration: time,
     };
     console.log("Sending payload:", JSON.stringify(payload, null, 2));
-   fetch(`http://localhost:8080/api/interviews/${id}/feedback`, {
-     method: "POST",
-     credentials: "include",
-     headers: {
-       "Content-Type": "application/json",
-     },
-     body: JSON.stringify({
-       interviewId: id,
-       userName: userName,
-       conversation: conv,
-       duration: time,
-     }),
-   })
-     .then((res) => {
-       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-       return res.json();
-     })
-     .then((data) => {
-       setFeedback(data.feedback);
-       toast.success("Feedback submitted!");
-       navigate(`/interview/feedback`, { state: { feedback: data.feedback } });
-     })
-     .catch((err) => {
-       console.error("Error submitting feedback:", err.message);
-       toast.error("Failed to submit feedback.");
-     });
- };
-
-
+    fetch(`http://localhost:8080/api/interviews/${id}/feedback`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        setFeedback(data.feedback);
+        toast.success("Feedback submitted!");
+        navigate("/completed"); // Navigate to /completed instead of /interview/feedback
+      })
+      .catch((err) => {
+        console.error("Error submitting feedback:", err.message);
+        toast.error("Failed to submit feedback.");
+        navigate("/completed"); // Navigate to /completed even on error
+      });
+  };
 
   if (isLoading) return <div className="p-6 text-center">Loading...</div>;
 
   return (
     <ErrorBoundary>
       <div className="h-screen bg-gray-100 flex flex-col items-center justify-start p-4">
-        {/* Header */}
         <div className="w-full flex justify-between items-center mb-6">
           <h1 className="text-xl font-semibold text-gray-800">
             AI Interview Session
@@ -273,9 +264,7 @@ function InterviewRoom() {
           </div>
         </div>
 
-        {/* Video Grid */}
         <div className="grid grid-cols-2 gap-6 w-full max-w-4xl mb-8">
-          {/* AI Recruiter */}
           <div className="bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-8 h-64">
             <div className="relative">
               {!activeUser && (
@@ -290,7 +279,6 @@ function InterviewRoom() {
             <p className="text-gray-700 font-medium mt-2">AI Recruiter</p>
           </div>
 
-          {/* Candidate */}
           <div className="bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-8 h-64">
             <div className="relative">
               {activeUser && (
@@ -304,7 +292,6 @@ function InterviewRoom() {
           </div>
         </div>
 
-        {/* Control Buttons */}
         <div className="flex gap-4">
           {!isInterviewStarted ? (
             <button

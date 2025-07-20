@@ -1,4 +1,3 @@
-// src/components/CreateInterview.jsx
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import InterviewForm from "../components/InterviewForm";
@@ -19,6 +18,7 @@ const CreateInterview = () => {
     description: "",
     duration: "15 minutes",
     selectedType: null,
+    userName: "",
   });
 
   const [step, setStep] = useState(0);
@@ -39,7 +39,7 @@ const CreateInterview = () => {
   };
 
   const handleFormSuccess = ({ interviewData, questions }) => {
-    setInterviewData(interviewData);
+    setInterviewData({ ...interviewData, questions }); // Merge questions into interviewData
     setGeneratedQuestions(questions);
     setStep(1);
     setIsGenerating(false);
@@ -68,6 +68,7 @@ const CreateInterview = () => {
             onSuccess={handleFormSuccess}
             onError={handleFormError}
             isGenerating={isGenerating}
+            setIsGenerating={setIsGenerating}
             interviewTypes={interviewTypes}
           />
         )}
@@ -84,12 +85,14 @@ const CreateInterview = () => {
         {step === 2 && interviewData && (
           <InterviewConfirmation
             interview={interviewData}
-            onStartNew={() => {
+            onBackToDashboard={() => navigate("/dashboard")} // Add navigation to dashboard
+            onCreateNew={() => {
               setForm({
                 jobTitle: "",
                 description: "",
                 duration: "15 minutes",
                 selectedType: null,
+                userName: "",
               });
               setStep(0);
               setGeneratedQuestions([]);

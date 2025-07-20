@@ -4,24 +4,25 @@ import { useNavigate } from "react-router-dom";
 const InterviewCards = ({ interviews }) => {
   const navigate = useNavigate();
 
-  const handleCopy = (id) => {
-    const url = `${window.location.origin}/interview/${id}`;
-    navigator.clipboard.writeText(url);
-    alert("Link copied to clipboard!");
+  const handleCardClick = (interview) => {
+    // Navigate to InterviewDetailsPage with interview data
+    navigate(`/details/${interview.id}`, {
+      state: { interview },
+    });
   };
 
-  const handleSend = (id) => {
-    const url = `${window.location.origin}/interview/${id}`;
-    // Send email logic or share modal can go here
-    alert(`Sending interview link: ${url}`);
-  };
+  // ✅ Filter only interviews that have feedback
+  const completedInterviews = interviews.filter(
+    (interview) => interview.feedback
+  );
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      {interviews.map((interview) => (
+      {completedInterviews.map((interview) => (
         <div
           key={interview.id}
-          className="bg-white p-4 rounded-xl shadow flex flex-col justify-between"
+          className="bg-white p-4 rounded-xl shadow flex flex-col justify-between cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => handleCardClick(interview)}
         >
           <div>
             <p className="text-blue-600 font-medium mb-1">
@@ -31,20 +32,7 @@ const InterviewCards = ({ interviews }) => {
             <p className="text-gray-400 text-xs mt-2">
               {new Date(interview.createdAt || Date.now()).toLocaleDateString()}
             </p>
-          </div>
-          <div className="mt-4 flex gap-2">
-            <button
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-sm py-1 px-3 rounded"
-              onClick={() => handleCopy(interview.id)}
-            >
-              Copy Link
-            </button>
-            <button
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-1 px-3 rounded"
-              onClick={() => handleSend(interview.id)}
-            >
-              Send
-            </button>
+            <p className="text-green-600 text-xs mt-1">Feedback Available</p>
           </div>
         </div>
       ))}

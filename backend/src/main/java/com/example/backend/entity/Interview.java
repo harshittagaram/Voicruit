@@ -15,6 +15,7 @@ public class Interview {
     private String duration;
     private String interviewType;
     private String createdBy;
+    private String userName; // Added userName field
 
     @Column(columnDefinition = "TEXT")
     private String questions;
@@ -27,19 +28,14 @@ public class Interview {
     // Default constructor
     public Interview() {}
 
-    // Constructor
-    public Interview(String jobTitle, String description, String duration, String interviewType, String createdBy) {
+    // Updated constructor
+    public Interview(String jobTitle, String description, String duration, String interviewType, String createdBy, String userName) {
         this.jobTitle = jobTitle;
         this.description = description;
         this.duration = duration;
         this.interviewType = interviewType;
         this.createdBy = createdBy;
-    }
-
-    // Automatically set createdAt before persisting
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.userName = userName;
     }
 
     // Getters and Setters
@@ -91,6 +87,14 @@ public class Interview {
         this.createdBy = createdBy;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     public String getQuestions() {
         return questions;
     }
@@ -113,5 +117,10 @@ public class Interview {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 }

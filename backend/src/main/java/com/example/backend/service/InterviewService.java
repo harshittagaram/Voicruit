@@ -1,6 +1,5 @@
 package com.example.backend.service;
 
-
 import com.example.backend.dto.InterviewRequest;
 import com.example.backend.entity.Interview;
 import com.example.backend.repository.InterviewRepository;
@@ -22,14 +21,14 @@ public class InterviewService {
         return interviewRepository.findByCreatedBy(email);
     }
 
-
     public Interview createInterview(InterviewRequest request, String createdBy, List<String> questions) {
         Interview interview = new Interview(
                 request.getJobTitle(),
                 request.getDescription(),
                 request.getDuration(),
                 request.getInterviewType(),
-                createdBy
+                createdBy,
+                request.getUserName() // Added userName
         );
 
         interview.setQuestions(String.join("\n", questions));

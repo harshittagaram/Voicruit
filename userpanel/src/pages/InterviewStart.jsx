@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 import photo from "../assets/Voicruit_1.png";
 
 const InterviewStart = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [interview, setInterview] = useState(null);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(searchParams.get("name") || "");
   const [currentTime, setCurrentTime] = useState(
     new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })
   );
@@ -49,6 +55,7 @@ const InterviewStart = () => {
         .then((data) => {
           console.log("API Response from GET:", data);
           setInterview(data);
+          setName(data.userName || searchParams.get("name") || ""); // Use userName from interview
           setIsLoading(false);
         })
         .catch((err) => {
@@ -66,17 +73,22 @@ const InterviewStart = () => {
         location.state.interviewData
       );
       setInterview(location.state.interviewData);
+      setName(
+        location.state.interviewData?.userName || searchParams.get("name") || ""
+      );
       setIsLoading(false);
     }
 
     return () => clearInterval(timer);
-  }, [id, location.state, navigate]);
+  }, [id, location.state, navigate, searchParams]);
 
   const handleJoin = () => {
     if (name.trim()) {
       navigate(`/interview/${id}/start`, {
         state: { interviewData: interview, userName: name },
       });
+    } else {
+      alert("Please enter your name.");
     }
   };
 

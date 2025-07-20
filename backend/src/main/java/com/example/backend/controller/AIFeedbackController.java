@@ -41,7 +41,6 @@ public class AIFeedbackController {
     @PostMapping("/interviews/{id}/feedback")
     public ResponseEntity<FeedbackResponse> generateFeedback(@PathVariable String id, @RequestBody FeedbackRequest request) {
         try {
-            // Check if conversation is null or empty
             if (request.getConversation() == null || (request.getConversation() instanceof List && ((List<?>) request.getConversation()).isEmpty())) {
                 logger.error("Invalid request data: No conversation provided for interview ID {}", id);
                 return ResponseEntity.badRequest().body(new FeedbackResponse("No conversation data provided"));
@@ -72,7 +71,6 @@ public class AIFeedbackController {
                     "  }\n" +
                     "}";
 
-            // Convert conversation to JSON string
             String conversationJson;
             if (request.getConversation() instanceof List) {
                 conversationJson = objectMapper.writeValueAsString(request.getConversation());
@@ -83,7 +81,6 @@ public class AIFeedbackController {
             }
             String formattedPrompt = prompt.replace("{{conversation}}", conversationJson);
 
-            // Build the request using a Map instead of manual string formatting
             Map<String, Object> message = Map.of(
                     "role", "user",
                     "content", formattedPrompt
@@ -93,9 +90,7 @@ public class AIFeedbackController {
                     "messages", List.of(message)
             );
 
-// Convert to JSON safely using ObjectMapper
             String requestBody = objectMapper.writeValueAsString(requestMap);
-
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + openrouterApiKey);
@@ -112,34 +107,31 @@ public class AIFeedbackController {
 
                 Interview interview = interviewRepository.findById(Long.parseLong(id))
                         .orElseThrow(() -> new RuntimeException("Interview not found"));
-                interview.setFeedback(content); // Save full JSON feedback
+                JsonNode feedbackNode = objectMapper.readTree(content);
+                JsonNode innerFeedback = feedbackNode.path("feedback"); // Extract inner feedback
+                interview.setFeedback(objectMapper.writeValueAsString(innerFeedback)); // Save inner feedback object
                 interviewRepository.save(interview);
 
-                // Parse the JSON response from the AI
-                JsonNode feedbackNode = objectMapper.readTree(content);
                 FeedbackResponse feedbackResponse = new FeedbackResponse();
                 List<String> summaryList = new ArrayList<>();
-                JsonNode summaryNode = feedbackNode.path("feedback").path("summary");
+                JsonNode summaryNode = innerFeedback.path("summary");
                 if (summaryNode.isArray()) {
                     Iterator<JsonNode> elements = summaryNode.elements();
                     while (elements.hasNext()) {
                         summaryList.add(elements.next().asText(""));
                     }
-                } else {
-                    logger.warn("Summary is not an array, using empty list as fallback");
                 }
-                // Ensure summary has at least 3 lines, padding with empty strings if needed
                 while (summaryList.size() < 3) {
                     summaryList.add("");
                 }
                 feedbackResponse.setFeedback(new Feedback(
-                        feedbackNode.path("feedback").path("ratings").path("technicalSkills").asInt(0), // Default to 0 if missing
-                        feedbackNode.path("feedback").path("ratings").path("communication").asInt(0),
-                        feedbackNode.path("feedback").path("ratings").path("problemSolving").asInt(0),
-                        feedbackNode.path("feedback").path("ratings").path("experience").asInt(0),
-                        summaryList.subList(0, 3), // Take up to 3 lines
-                        feedbackNode.path("feedback").path("recommendation").asText("N/A"),
-                        feedbackNode.path("feedback").path("recommendationMsg").asText("No recommendation available")
+                        innerFeedback.path("ratings").path("technicalSkills").asInt(0),
+                        innerFeedback.path("ratings").path("communication").asInt(0),
+                        innerFeedback.path("ratings").path("problemSolving").asInt(0),
+                        innerFeedback.path("ratings").path("experience").asInt(0),
+                        summaryList.subList(0, 3),
+                        innerFeedback.path("recommendation").asText("N/A"),
+                        innerFeedback.path("recommendationMsg").asText("No recommendation available")
                 ));
 
                 return ResponseEntity.ok(feedbackResponse);
@@ -166,7 +158,6 @@ public class AIFeedbackController {
 
         public String getInterviewId() { return interviewId; }
         public void setInterviewId(String interviewId) { this.interviewId = interviewId; }
-
         public String getUserName() { return userName; }
         public void setUserName(String userName) { this.userName = userName; }
         public String getDuration() { return duration; }

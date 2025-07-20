@@ -2,14 +2,10 @@ package com.example.backend.dto;
 
 public class InterviewRequest {
     private String jobTitle;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    private String description;
+    private String duration;
+    private String interviewType;
+    private String userName; // Added userName field
 
     public String getJobTitle() {
         return jobTitle;
@@ -17,6 +13,14 @@ public class InterviewRequest {
 
     public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getDuration() {
@@ -35,9 +39,11 @@ public class InterviewRequest {
         this.interviewType = interviewType;
     }
 
-    private String description;
-    private String duration;
-    private String interviewType;
+    public String getUserName() {
+        return userName;
+    }
 
-    // Getters and setters
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 }

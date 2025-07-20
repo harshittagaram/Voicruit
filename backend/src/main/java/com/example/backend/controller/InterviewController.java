@@ -55,7 +55,12 @@ public class InterviewController {
 
         String email = user.getAttribute("email");
 
-        // First, generate AI questions
+        // Validate userName
+        if (request.getUserName() == null || request.getUserName().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "userName is required"));
+        }
+
+        // Generate AI questions
         AIQuestionController.AIRequest aiRequest = new AIQuestionController.AIRequest();
         aiRequest.setJobPosition(request.getJobTitle());
         aiRequest.setJobDescription(request.getDescription());
@@ -69,7 +74,7 @@ public class InterviewController {
                     .body(Map.of("message", "Failed to generate questions"));
         }
 
-        // Now save the interview with questions
+        // Save the interview with userName
         Interview interview = interviewService.createInterview(
                 request,
                 email,
@@ -84,8 +89,9 @@ public class InterviewController {
         interviewData.put("description", interview.getDescription());
         interviewData.put("duration", interview.getDuration());
         interviewData.put("type", interview.getInterviewType());
+        interviewData.put("userName", interview.getUserName());
         interviewData.put("link", link);
-        interviewData.put("createdAt", interview.getCreatedAt()); // Added createdAt
+        interviewData.put("createdAt", interview.getCreatedAt());
 
         Map<String, Object> response = new HashMap<>();
         response.put("interviewData", interviewData);

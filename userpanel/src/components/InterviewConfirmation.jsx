@@ -9,10 +9,21 @@ const InterviewConfirmation = ({
   const navigate = useNavigate();
   const interviewLink = interview?.id
     ? `http://localhost:5173/interview/${interview.id}`
-    : "#"; // Fallback to prevent errors if interview is null
-  const expirationDate = interview?.expiryDate || "Nov 20, 2025";
-  const duration = interview?.duration || "30 Minutes";
-  const questionCount = interview?.questions?.length || 0; // Default to 0 if questions is null/undefined
+    : "#";
+  const duration = interview?.duration || "15 minutes"; // Use interview.duration
+  const questionCount = Array.isArray(interview?.questions)
+    ? interview.questions.length
+    : 0; // Safely access questions length
+  // Calculate expiry date: 7 days from createdAt or current date
+  const createdAt = interview?.createdAt
+    ? new Date(interview.createdAt)
+    : new Date();
+  const expiryDate = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000); // Add 7 days
+  const formattedExpiryDate = expiryDate.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 
   const handleCopy = () => {
     if (interview?.id) {
@@ -70,7 +81,7 @@ const InterviewConfirmation = ({
         <div className="text-sm text-gray-600 flex flex-wrap gap-4 pt-2">
           <span>📅 {duration}</span>
           <span>❓ {questionCount} Questions</span>
-          <span>⏳ Expires: {expirationDate}</span>
+          <span>⏳ Expires: {formattedExpiryDate}</span>
         </div>
       </div>
 
@@ -98,7 +109,7 @@ const InterviewConfirmation = ({
       <div className="flex justify-between pt-6">
         <button
           className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
-          onClick={onBackToDashboard}
+          onClick={() => navigate("/dashboard")} // Navigate to /dashboard
           disabled={!interview?.id}
         >
           ← Back to Dashboard

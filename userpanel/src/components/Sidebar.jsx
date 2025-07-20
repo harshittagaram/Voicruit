@@ -20,19 +20,19 @@ const Sidebar = () => {
         <Link to="/dashboard" className="block hover:text-blue-600 font-medium">
           Dashboard
         </Link>
-        <a href="#" className="block hover:text-blue-600">
-          Scheduled Interview
-        </a>
+        <Link to="/completed-links" className="block hover:text-blue-600">
+          Completed Interview Links
+        </Link>
         <Link to="/all-interviews" className="block hover:text-blue-600">
-          Your Past Interviews
+          Past Interview Details
         </Link>
 
         <a href="#" className="block hover:text-blue-600">
           Billing
         </a>
-        <a href="#" className="block hover:text-blue-600">
+        <Link to="/settings" className="block hover:text-blue-600">
           Settings
-        </a>
+        </Link>
       </nav>
     </aside>
   );
